@@ -48,6 +48,19 @@ def launcher_argparser(args) -> argparse.ArgumentParser:
 def main(launcher_cfg):
 
     run_description = get_experiment_run_description(launcher_cfg)
+    print("--------------")
+    print("^^^^^^",run_description.run_name)
+    print("^^^^^^",run_description)
+    print("^^^^^^",run_description.experiments)
+    print("^^^^^^",run_description.experiment_arg_name)
+    print("^^^^^^",run_description.experiment_dir_arg_name)
+    print("^^^^^^",run_description.customize_experiment_name)
+    print("^^^^^^",run_description.param_prefix)
+    print("experiments.basename",run_description.experiments[0].base_name)
+    print("experiments.cmd",run_description.experiments[0].cmd)
+    print("experiments.params",run_description.experiments[0].params)
+    print("experiments.env_vars",run_description.experiments[0].env_vars)
+        
 
     if launcher_cfg.backend == "processes":
         run(run_description, launcher_cfg)
