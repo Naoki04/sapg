@@ -232,6 +232,9 @@ class A2CBase(BaseAlgorithm):
         assert(('minibatch_size_per_env' in self.config) or ('minibatch_size' in self.config))
         self.minibatch_size_per_env = self.config.get('minibatch_size_per_env', 0)
         self.minibatch_size = self.config.get('minibatch_size', self.num_actors * self.minibatch_size_per_env)
+        
+        # モデル保存時にバッチを保存するかどうか
+        self.save_batch = self.config.get('save_batch', False)
 
         self.num_minibatches = self.batch_size // self.minibatch_size
         print('num_minibatches:', self.num_minibatches)
@@ -953,6 +956,13 @@ class A2CBase(BaseAlgorithm):
         return batch_dict, extras
     
     def augment_batch_for_mixed_expl(self, batch_dict, extras, repeat_idxs=None):
+        
+        # 分析のため、モデル保存のタイミングでbatch_dictとextrasを保存する。
+        if self.save_batch:
+            if self.epoch_num % self.save_freq == 0:
+                torch.save(batch_dict, os.path.join(self.batch_dir, f"batch_dict_{self.epoch_num}.pt"))
+                torch.save(extras, os.path.join(self.batch_dir, f"extras_{self.epoch_num}.pt"))
+        
         new_batch_dict = {}
         num_blocks = self.num_actors // self.intr_coef_block_size
         if repeat_idxs is None:

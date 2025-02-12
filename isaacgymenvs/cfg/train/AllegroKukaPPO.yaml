@@ -71,6 +71,9 @@ params:
     horizon_length: 16
     seq_length: 16
 
+    # モデル保存時にbatchを保存する
+    save_batch: True
+
     # SampleFactory currently gives better results without bounds loss but I don't think this loss matters too much
     # bounds_loss_coef: 0.0
     bounds_loss_coef: 0.0001
