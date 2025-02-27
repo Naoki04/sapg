@@ -3,8 +3,17 @@ import torch
 import math
 
 
-def critic_loss(model, value_preds_batch, values, curr_e_clip, return_batch, clip_value):
-    return default_critic_loss(value_preds_batch, values, curr_e_clip, return_batch, clip_value)
+def critic_loss(model, value_preds_batch, values, curr_e_clip, return_batch, clip_value, off_policy_mask):
+    # value, return, value_predsの平均を計算
+    masked_values = values * off_policy_mask
+    masked_value_preds = value_preds_batch * off_policy_mask
+    masked_returns = return_batch * off_policy_mask
+    num_valid = off_policy_mask.sum()
+    mean_v = masked_values.sum() / (num_valid + 1e-8)
+    mean_v_pred = masked_value_preds.sum() / (num_valid + 1e-8)
+    mean_q = masked_returns.sum() / (num_valid + 1e-8)
+    
+    return default_critic_loss(value_preds_batch, values, curr_e_clip, return_batch, clip_value), mean_v.detach().cpu().numpy(), mean_q.detach().cpu().numpy(), mean_v_pred.detach().cpu().numpy()
     #return model.get_value_layer().loss(value_preds_batch=value_preds_batch, values=values, curr_e_clip=curr_e_clip, return_batch=return_batch, clip_value=clip_value)
 
 def default_critic_loss(value_preds_batch, values, curr_e_clip, return_batch, clip_value):

@@ -127,7 +127,7 @@ class A2CAgent(a2c_common.ContinuousA2CBase):
             a_loss = self.actor_loss_func(old_action_log_probs_batch, action_log_probs, advantage, self.ppo, curr_e_clip)
 
             if self.has_value_loss:
-                c_loss = common_losses.critic_loss(self.model,value_preds_batch, values, curr_e_clip, return_batch, self.clip_value)
+                c_loss, mean_v, mean_q, mean_v_pred = common_losses.critic_loss(self.model,value_preds_batch, values, curr_e_clip, return_batch, self.clip_value, input_dict["off_policy_mask"])
             else:
                 c_loss = torch.zeros((len(values), 1), device=self.ppo_device)
             if self.bound_loss_type == 'regularisation':
@@ -153,6 +153,7 @@ class A2CAgent(a2c_common.ContinuousA2CBase):
                 on_policy_loss = torch.masked_select(loss_arr, ~input_dict['off_policy_mask'].unsqueeze(1)).sum() / len(input_dict['off_policy_mask'])
                 grads_off = self.get_grads(off_policy_loss)
                 grads_on = self.get_grads(on_policy_loss)
+           
 
             losses, sum_mask = torch_ext.apply_masks([a_loss.unsqueeze(1), c_loss , (entropy_coef*entropy).unsqueeze(1), b_loss.unsqueeze(1)], rnn_masks)
             a_loss, c_loss, entropy_loss, b_loss = losses[0], losses[1], losses[2], losses[3]
@@ -198,6 +199,9 @@ class A2CAgent(a2c_common.ContinuousA2CBase):
                 "on_policy_contrib" : contrib_on.item(),
                 "off_policy_grads" : grads_off.detach().cpu(),
                 "on_policy_grads" : grads_on.detach().cpu(),
+                "mean_v" : mean_v,
+                "mean_q" : mean_q,
+                "mean_v_pred" : mean_v_pred,
             }
         else:
             extras = {
@@ -205,6 +209,9 @@ class A2CAgent(a2c_common.ContinuousA2CBase):
                 "off_policy_contrib" : 0,
                 "on_policy_grads" : all_grads.detach().cpu(),
                 "off_policy_grads" : torch.zeros_like(all_grads).cpu(),
+                "mean_v" : mean_v,
+                "mean_q" : mean_q,
+                "mean_v_pred" : mean_v_pred,
             }     
         if self.expl_type.startswith('mixed_expl'):
             bl_ids = self.intr_reward_coef_embd[::self.intr_coef_block_size, 0].reshape(-1,1)

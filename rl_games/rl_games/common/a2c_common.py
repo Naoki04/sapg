@@ -1384,6 +1384,10 @@ class ContinuousA2CBase(A2CBase):
         entropies = []
         kls = []
 
+
+   
+        
+        # extra_infosに追加
         extra_infos = {
             'on_policy_contrib' : [],
             'off_policy_contrib' : [],
@@ -1391,7 +1395,10 @@ class ContinuousA2CBase(A2CBase):
             'off_policy_grads' : [],
             'entropies' : [],
             'mb_intr_rewards' : ps_extras['mb_intr_rewards'],
-            'mb_extr_rewards' :ps_extras['rewards']
+            'mb_extr_rewards' : ps_extras['rewards'],
+            'mean_v' : [],
+            'mean_q' : [],
+            'mean_v_pred' : [],
         }
 
         for mini_ep in range(0, self.mini_epochs_num):
@@ -1401,7 +1408,11 @@ class ContinuousA2CBase(A2CBase):
                 extra_infos['on_policy_contrib'].append(extras['on_policy_contrib'])
                 extra_infos['on_policy_grads'].append(extras['on_policy_grads'])
                 extra_infos['off_policy_contrib'].append(extras['off_policy_contrib'])
-                extra_infos['off_policy_grads'].append(extras['off_policy_grads'])
+                extra_infos['off_policy_grads'].append(extras['off_policy_grads']),
+                extra_infos['mean_v'].append(extras['mean_v'])
+                extra_infos['mean_q'].append(extras['mean_q'])
+                extra_infos['mean_v_pred'].append(extras['mean_v_pred'])
+                
                 if 'entropies' in extras:
                     extra_infos['entropies'].append(extras['entropies'])
                 a_losses.append(a_loss)
@@ -1592,9 +1603,18 @@ class ContinuousA2CBase(A2CBase):
                     self.writer.add_scalar('episode_lengths/step', mean_lengths, frame)
                     self.writer.add_scalar('episode_lengths/iter', mean_lengths, frame)
                     self.writer.add_scalar('episode_lengths/time', mean_lengths, frame)
+                    
+                    if 'mean_v' in extra_infos:
+                        self.writer.add_scalar('values/critic_v', np.array(extra_infos['mean_v']).mean(), frame)
+                        self.writer.add_scalar('values/critic_q', np.array(extra_infos['mean_q']).mean(), frame)
+                        self.writer.add_scalar('values/critic_v_pred', np.array(extra_infos['mean_v_pred']).mean(), frame)
+                        self.writer.add_scalar('values/critic_advantage', (np.array(extra_infos['mean_q']) - np.array(extra_infos['mean_v'])).mean(), frame)
+                        self.writer.add_scalar('values/critic_v_error', (np.array(extra_infos['mean_v']) - np.array(extra_infos['mean_v_pred'])).mean(), frame)
 
                     self.writer.add_histogram('auxiliary_stats/off_policy_contrib', np.array(extra_infos['off_policy_contrib']), frame)
                     self.writer.add_histogram('auxiliary_stats/on_policy_contrib', np.array(extra_infos['on_policy_contrib']), frame)
+                    
+                  
 
                     on_policy_grads = torch.stack(extra_infos['on_policy_grads'])
                     off_policy_grads = torch.stack(extra_infos['off_policy_grads'])
@@ -1679,3 +1699,5 @@ class ContinuousA2CBase(A2CBase):
 
             # print("Epoch done")
             # time.sleep(3)
+
+            
