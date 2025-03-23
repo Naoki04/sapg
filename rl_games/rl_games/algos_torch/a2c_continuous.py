@@ -127,7 +127,7 @@ class A2CAgent(a2c_common.ContinuousA2CBase):
             a_loss = self.actor_loss_func(old_action_log_probs_batch, action_log_probs, advantage, self.ppo, curr_e_clip)
 
             if self.has_value_loss:
-                c_loss, mean_v, mean_q, mean_v_pred = common_losses.critic_loss(self.model,value_preds_batch, values, curr_e_clip, return_batch, self.clip_value, input_dict["off_policy_mask"])
+                c_loss, mean_v, mean_q, mean_v_pred = common_losses.critic_loss(self.model,value_preds_batch, values, curr_e_clip, return_batch, self.clip_value)
             else:
                 c_loss = torch.zeros((len(values), 1), device=self.ppo_device)
             if self.bound_loss_type == 'regularisation':

@@ -3,14 +3,14 @@ import torch
 import math
 
 
-def critic_loss(model, value_preds_batch, values, curr_e_clip, return_batch, clip_value, off_policy_mask):
+def critic_loss(model, value_preds_batch, values, curr_e_clip, return_batch, clip_value):
     
     c_loss = default_critic_loss(value_preds_batch, values, curr_e_clip, return_batch, clip_value)
     # value, return, value_predsの平均を計算
     with torch.no_grad():
-        mean_v = values[off_policy_mask].mean()
-        mean_v_pred = value_preds_batch[off_policy_mask].mean()
-        mean_q = return_batch[off_policy_mask].mean()
+        mean_v = values.mean()
+        mean_v_pred = value_preds_batch.mean()
+        mean_q = return_batch.mean()
     
     return c_loss, mean_v.detach().cpu().numpy(), mean_q.detach().cpu().numpy(), mean_v_pred.detach().cpu().numpy()
     #return model.get_value_layer().loss(value_preds_batch=value_preds_batch, values=values, curr_e_clip=curr_e_clip, return_batch=return_batch, clip_value=clip_value)
