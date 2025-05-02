@@ -207,9 +207,6 @@ class A2CBase(BaseAlgorithm):
         self.normalize_value = self.config.get('normalize_value', False)
         self.truncate_grads = self.config.get('truncate_grads', False)
         
-        self.plot_kl = self.config.get('plot_kl', False)
-        if self.plot_kl:
-            self.kl_path = os.path.join(self.train_dir, "kl_dists.csv")
 
         if isinstance(self.observation_space, gym.spaces.Dict):
             self.obs_shape = {}
@@ -259,6 +256,10 @@ class A2CBase(BaseAlgorithm):
         self.curr_frames = 0
         # allows us to specify a folder where all experiments will reside
         self.train_dir = config.get('train_dir', 'runs')
+        
+        self.plot_kl = self.config.get('plot_kl', False)
+        if self.plot_kl:
+            self.kl_path = os.path.join(self.train_dir, "kl_dists.csv")
 
         # a folder inside of train_dir containing everything related to a particular experiment
         self.experiment_dir = os.path.join(self.train_dir, self.experiment_name)
