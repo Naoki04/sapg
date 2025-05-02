@@ -1142,7 +1142,7 @@ class DiscreteA2CBase(A2CBase):
             if self.normalize_input:
                 self.model.running_mean_std.eval() # don't need to update statstics more than one miniepoch
                 
-         if self.plot_kl:
+        if self.plot_kl:
             kl_tensor = torch.stack(kl_tensor_list)
             num_data = torch.tensor(num_data_list)
             # 重み付き平均KL距離を計算する。
