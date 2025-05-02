@@ -231,8 +231,7 @@ class A2CAgent(a2c_common.ContinuousA2CBase):
                 actions_batch = input_dict['actions']
                 obs_batch = input_dict['obs']
                 obs_batch = self._preproc_obs(obs_batch)
-                leader_online_mask = input_dict['leader_online_mask']
-                follower_online_mask = input_dict['follower_online_mask']
+                off_policy_mask = input_dict['off_policy_mask']
                 """
                 # 基本のバッチを作る
                 """
@@ -262,8 +261,8 @@ class A2CAgent(a2c_common.ContinuousA2CBase):
                     batch['obs'][:,-self.intr_reward_coef_embd.shape[-1]:] = embeddings[i] # embeddingを入れる
                     # 推論
                     res_dict = self.model(batch)
-                    mus = res_dict['mus'][torch.logical_or(leader_online_mask, follower_online_mask)]
-                    sigmas = res_dict['sigmas'][torch.logical_or(leader_online_mask, follower_online_mask)]
+                    mus = res_dict['mus'][torch.logical_not(off_policy_mask)]
+                    sigmas = res_dict['sigmas'][torch.logical_not(off_policy_mask)]
                     mus_list.append(mus)
                     sigmas_list.append(sigmas)
                 """
@@ -275,7 +274,7 @@ class A2CAgent(a2c_common.ContinuousA2CBase):
                         kl_tensor[i][j] = torch_ext.policy_kl(mus_list[i], sigmas_list[i], mus_list[j], sigmas_list[j], reduce=True)
                     
                 
-        return kl_tensor, torch.logical_or(leader_online_mask,follower_online_mask).sum()
+        return kl_tensor, torch.logical_not(off_policy_mask).sum()
 
     def train_actor_critic(self, input_dict):
         self.calc_gradients(input_dict)
