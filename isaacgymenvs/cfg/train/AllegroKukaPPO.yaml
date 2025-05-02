@@ -73,6 +73,7 @@ params:
 
     # モデル保存時にbatchを保存する
     save_batch: True
+    plot_kl: False # エージェント間のKLを出力するかどうか
 
     # SampleFactory currently gives better results without bounds loss but I don't think this loss matters too much
     # bounds_loss_coef: 0.0
