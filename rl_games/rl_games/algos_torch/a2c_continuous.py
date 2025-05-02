@@ -10,6 +10,8 @@ from torch import optim
 import torch
 import torch.distributed as dist 
 
+import copy
+
 
 class A2CAgent(a2c_common.ContinuousA2CBase):
 
