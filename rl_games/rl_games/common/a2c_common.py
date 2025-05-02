@@ -1107,23 +1107,10 @@ class DiscreteA2CBase(A2CBase):
         if self.has_central_value:
             self.train_central_value()
             
-        if self.plot_kl:
-            kl_tensor_list = []
-            num_data_list = []
             
         for mini_ep in range(0, self.mini_epochs_num):
             ep_kls = []
             for i in range(len(self.dataset)):
-                
-                """
-                # 分析のために各エージェント間のKL距離を計算する。
-                """
-                if self.plot_kl and mini_ep == 0:
-                    kl_tensor, num_data = self.calc_agents_kl(self.dataset[i])
-                    kl_tensor_list.append(kl_tensor)
-                    num_data_list.append(num_data)
-                    
-                # 以下、通常の学習
                 
                 a_loss, c_loss, entropy, kl, last_lr, lr_mul = self.train_actor_critic(self.dataset[i])
                 a_losses.append(a_loss)
@@ -1143,25 +1130,6 @@ class DiscreteA2CBase(A2CBase):
             if self.normalize_input:
                 self.model.running_mean_std.eval() # don't need to update statstics more than one miniepoch
                 
-        if self.plot_kl:
-            kl_tensor = torch.stack(kl_tensor_list)
-            num_data = torch.tensor(num_data_list)
-            # 重み付き平均KL距離を計算する。
-            kl_tensor = torch.sum(kl_tensor * num_data.unsqueeze(1).unsqueeze(2).to(self.ppo_device), dim=0) / torch.sum(num_data, dim=0)
-            # KL距離を平均化する。
-            print("KL distance", kl_tensor)
-            
-            # 保存
-            if os.path.exists(self.kl_path):
-                pass
-            kl_flat = kl_tensor.view(-1).cpu().numpy() # 6x6 -> 36
-            row = pd.DataFrame([list(kl_flat)])
-            row.to_csv(
-                self.kl_path,
-                mode="a",
-                index=False,
-                header= (not (os.path.exists(self.kl_path)))
-            )
 
         update_time_end = time.time()
         play_time = play_time_end - play_time_start
@@ -1438,10 +1406,23 @@ class ContinuousA2CBase(A2CBase):
             'mean_q' : [],
             'mean_v_pred' : [],
         }
+        
+        if self.plot_kl:
+            kl_tensor_list = []
+            num_data_list = []
  
         for mini_ep in range(0, self.mini_epochs_num):
             ep_kls = []
             for i in range(len(self.dataset)):
+                """
+                # 分析のために各エージェント間のKL距離を計算する。
+                """
+                if self.plot_kl and mini_ep == 0:
+                    kl_tensor, num_data = self.calc_agents_kl(self.dataset[i])
+                    kl_tensor_list.append(kl_tensor)
+                    num_data_list.append(num_data)
+                    
+                # 以下、通常の学習
                 a_loss, c_loss, entropy, kl, last_lr, lr_mul, cmu, csigma, b_loss, extras = self.train_actor_critic(self.dataset[i])
                 extra_infos['on_policy_contrib'].append(extras['on_policy_contrib'])
                 extra_infos['on_policy_grads'].append(extras['on_policy_grads'])
@@ -1481,6 +1462,26 @@ class ContinuousA2CBase(A2CBase):
             self.diagnostics.mini_epoch(self, mini_ep)
             if self.normalize_input:
                 self.model.running_mean_std.eval() # don't need to update statstics more than one miniepoch
+                
+        if self.plot_kl:
+            kl_tensor = torch.stack(kl_tensor_list)
+            num_data = torch.tensor(num_data_list)
+            # 重み付き平均KL距離を計算する。
+            kl_tensor = torch.sum(kl_tensor * num_data.unsqueeze(1).unsqueeze(2).to(self.ppo_device), dim=0) / torch.sum(num_data, dim=0)
+            # KL距離を平均化する。
+            print("KL distance", kl_tensor)
+            
+            # 保存
+            if os.path.exists(self.kl_path):
+                pass
+            kl_flat = kl_tensor.view(-1).cpu().numpy() # 6x6 -> 36
+            row = pd.DataFrame([list(kl_flat)])
+            row.to_csv(
+                self.kl_path,
+                mode="a",
+                index=False,
+                header= (not (os.path.exists(self.kl_path)))
+            )
 
         update_time_end = time.time()
         play_time = play_time_end - play_time_start
