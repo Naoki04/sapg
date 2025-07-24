@@ -23,7 +23,7 @@ params:
         fixed_sigma: True
 
     mlp:
-      units: [512, 256, 128]
+      units: [768, 512, 256]
       activation: elu
       d2rl: False
 
@@ -67,7 +67,7 @@ params:
     kl_threshold: 0.008 # target kl for adaptive lr
     truncate_grads: True
     grad_norm: 1.
-    horizon_length: 24
+    horizon_length: 16
     minibatch_size: 16384
     mini_epochs: 5
     critic_coef: 2
@@ -75,8 +75,20 @@ params:
     seq_len: 4 # only for rnn
     bounds_loss_coef: 0.
 
-    max_epochs: ${resolve_default:1500,${....max_iterations}}
+    plot_kl: False # wether to plot KL divergence
+
+    good_reset_boundary: ${if:${....task.env.goodResetBoundary},${....task.env.goodResetBoundary},0}
+    use_others_experience: 'none' # 'none', 'all', 'lead_foll'
+    off_policy_ratio: 1.0
+
+    max_epochs: 52000 #${resolve_default:1500,${....max_iterations}}
     save_best_after: 100
     score_to_win: 20000
-    save_frequency: 50
+    save_frequency: 5200
     print_stats: True
+
+    expl_type: 'none' # 'none', 'mixed_expl', 'mixed_expl_disjoint'
+    expl_reward_coef_embd_size: 16
+    expl_reward_coef_scale: 1.0
+    expl_reward_type: rnd
+    expl_coef_block_size: 4096
