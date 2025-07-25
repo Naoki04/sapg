@@ -282,7 +282,7 @@ class A2CAgent(a2c_common.ContinuousA2CBase):
         with torch.cuda.amp.autocast(enabled=self.mixed_precision):
             with torch.no_grad():
                 # get actions and obs from online data.
-                online_mask = torch.logical_or(input_dict['leader_online_mask'], input_dict['follower_online_mask'])
+                online_mask = torch.logical_not(input_dict['off_policy_mask'])
                 actions_batch = input_dict['actions'][online_mask]
                 obs_batch = input_dict['obs'][online_mask]
                 obs_batch = self._preproc_obs(obs_batch)
