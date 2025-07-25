@@ -75,7 +75,8 @@ params:
     seq_len: 4 # only for rnn
     bounds_loss_coef: 0.
 
-    plot_kl: False # wether to plot KL divergence
+    plot_kl: False # Plot KL divergence between up-to-date agents
+    plot_ratio: False # Plot importance ratios between bahavior followers and the up-to-date leader
 
     good_reset_boundary: ${if:${....task.env.goodResetBoundary},${....task.env.goodResetBoundary},0}
     use_others_experience: 'none' # 'none', 'all', 'lead_foll'

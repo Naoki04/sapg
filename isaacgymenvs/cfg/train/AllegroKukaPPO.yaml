@@ -73,7 +73,8 @@ params:
 
     # モデル保存時にbatchを保存する
     save_batch: True
-    plot_kl: False # エージェント間のKLを出力するかどうか
+    plot_kl: False # Plot KL divergence between up-to-date agents
+    plot_ratio: False # Plot importance ratios between bahavior followers and the up-to-date leader
 
     # SampleFactory currently gives better results without bounds loss but I don't think this loss matters too much
     # bounds_loss_coef: 0.0
