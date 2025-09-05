@@ -67,6 +67,7 @@ def resolve_allegro_kuka(cfg, *args, **kwargs):
         reorientation=AllegroKukaReorientation,
         throw=AllegroKukaThrow,
         regrasping=AllegroKukaRegrasping,
+        block=AllegroKukaTwoArmsReorientationBlock,
     )
 
     if subtask_name not in subtask_map:
