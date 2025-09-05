@@ -496,7 +496,7 @@ sim:
     num_position_iterations: 8
     num_velocity_iterations: 0
 
-    max_gpu_contact_pairs: 16777216 # 8*1024*1024
+    max_gpu_contact_pairs: 43554432 #33554432 #16777216 # 8*1024*1024
     num_subscenes: ${....num_subscenes}
     contact_offset: 0.002
     rest_offset: 0.0
